@@ -1,18 +1,18 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { AppTabs } from 'components/app-tabs';
 import { Container } from 'components/Container';
 import React from 'react';
 import { useColorScheme } from 'react-native';
 
-import '../global.css';
+import { GluestackUIProvider } from '@/components/ui/gluestack-ui-provider';
+import '@/global.css';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <GluestackUIProvider mode={colorScheme === 'dark' ? 'dark' : 'light'}>
       <Container>
         <AppTabs />
       </Container>
-    </ThemeProvider>
+    </GluestackUIProvider>
   );
 }
