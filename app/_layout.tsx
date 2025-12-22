@@ -1,8 +1,8 @@
-import { AppTabs } from 'components/app-tabs';
 import { Container } from 'components/Container';
 import React from 'react';
 import { useColorScheme } from 'react-native';
 
+import { AppTabs } from '@/components/app-tabs';
 import { GluestackUIProvider } from '@/components/ui/gluestack-ui-provider';
 import '@/global.css';
 

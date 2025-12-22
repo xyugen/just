@@ -1,12 +1,12 @@
 import { Box } from '@/components/ui/box';
 import { Text } from '@/components/ui/text';
 
-const InProgressScreen = () => {
+const CreateScreen = () => {
   return (
     <Box className="h-full">
-      <Text>In Progress</Text>
+      <Text>Create</Text>
     </Box>
   );
 };
 
-export default InProgressScreen;
+export default CreateScreen;
