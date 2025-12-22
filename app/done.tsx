@@ -1,12 +1,12 @@
 import { Box } from '@/components/ui/box';
 import { Text } from '@/components/ui/text';
 
-const HomeScreen = () => {
+const DoneScreen = () => {
   return (
     <Box className="h-full">
-      <Text>All Tasks</Text>
+      <Text>In Progress</Text>
     </Box>
   );
 };
 
-export default HomeScreen;
+export default DoneScreen;

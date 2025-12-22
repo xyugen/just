@@ -1,12 +1,12 @@
 import { Box } from '@/components/ui/box';
 import { Text } from '@/components/ui/text';
 
-const HomeScreen = () => {
+const OverdueScreen = () => {
   return (
     <Box className="h-full">
-      <Text>All Tasks</Text>
+      <Text>Overdue</Text>
     </Box>
   );
 };
 
-export default HomeScreen;
+export default OverdueScreen;
