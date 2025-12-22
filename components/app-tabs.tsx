@@ -1,4 +1,5 @@
 import { cn } from '@gluestack-ui/utils/nativewind-utils';
+import { usePathname } from 'expo-router';
 import {
   TabList,
   TabListProps,
@@ -8,7 +9,7 @@ import {
   TabTriggerSlotProps,
 } from 'expo-router/ui';
 import { CircleDot, CirclePlus, House, LucideIcon, Search } from 'lucide-react-native';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Box } from './ui/box';
 import { Grid, GridItem } from './ui/grid';
@@ -40,10 +41,11 @@ const TAB_CONFIG = [
 export const AppTabs = () => {
   return (
     <Tabs>
-      <TabSlot className="h-full" />
+      <TabHeader />
+      <TabSlot className="h-full bg-slate-400" />
       <TabList asChild>
         <CustomTabList>
-          {TAB_CONFIG.map((tab, index) => (
+          {TAB_CONFIG.map((tab) => (
             <TabTrigger key={tab.name} name={tab.name} href={tab.href} asChild>
               <TabButton icon={tab.icon}>{tab.text}</TabButton>
             </TabTrigger>
@@ -51,6 +53,21 @@ export const AppTabs = () => {
         </CustomTabList>
       </TabList>
     </Tabs>
+  );
+};
+
+export const TabHeader = () => {
+  const pathname = usePathname();
+
+  // Find the current tab based on the pathname
+  const currentTab = useMemo(() => {
+    return TAB_CONFIG.find((tab) => tab.href === pathname) || TAB_CONFIG[0];
+  }, [pathname]);
+
+  return (
+    <Box className="border-b border-background-200 bg-background-0 p-2">
+      <Text className="text-center font-bold text-typography-900">{currentTab.text}</Text>
+    </Box>
   );
 };
 
@@ -67,8 +84,7 @@ export function TabButton({ children, isFocused, icon, ...props }: TabButtonProp
         <Icon
           as={IconComponent}
           className={cn('size-6', isFocused ? 'text-primary-500' : 'text-typography-500')}
-          width={2}
-          size="2xl"
+          size="xl"
         />
         <Text
           className={cn(
@@ -95,9 +111,7 @@ export function CustomTabList(props: TabListProps) {
       {...props}
       className="w-full flex-row items-center justify-center rounded-b-lg border-t border-background-100 bg-background-0 p-2">
       <View className="relative w-full">
-        <Grid
-          className="gap-2 rounded py-2"
-          _extra={{ className: cn(`grid-cols-${tabConfigLength}`) }}>
+        <Grid className="gap-2 rounded" _extra={{ className: cn(`grid-cols-${tabConfigLength}`) }}>
           {wrappedChildren}
         </Grid>
       </View>
