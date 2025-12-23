@@ -20,7 +20,7 @@
     "expo-linking": "~8.0.10",
     "expo-router": "~6.0.19",
     "expo-status-bar": "~3.0.9",
-    "lucide-react-native": "^0.561.0",
+    "lucide-react-native": "^0.510.0",
     "nativewind": "^4.1.23",
     "react": "19.1.0",
     "react-aria": "^3.33.0",

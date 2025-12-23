@@ -78,9 +78,7 @@ export const FilterTabs = () => {
           ))}
         </CustomTabList>
       </TabList>
-      <View className="h-full rounded-t-lg bg-background-0">
-        <TabSlot />
-      </View>
+      <TabSlot />
     </Tabs>
   );
 };
