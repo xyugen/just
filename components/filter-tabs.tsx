@@ -9,13 +9,19 @@ import {
 } from 'expo-router/ui';
 import { CheckCircle, CircleDot, Clock, ListTodo, LucideIcon } from 'lucide-react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { LayoutChangeEvent, StyleSheet, View } from 'react-native';
+import {
+  LayoutChangeEvent,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  ScrollView,
+  StyleSheet,
+  View,
+} from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { Box } from './ui/box';
 import { Grid, GridItem } from './ui/grid';
 import { Icon } from './ui/icon';
 import { Pressable } from './ui/pressable';
-import { Text } from './ui/text';
 
 const TAB_CONFIG = [
   {
@@ -65,20 +71,34 @@ const TabLayoutContext = React.createContext<{
 } | null>(null);
 
 export const FilterTabs = () => {
+  const [hasScrolled, setScrolled] = useState(false);
+
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const offsetY = event.nativeEvent.contentOffset.y;
+    setScrolled(offsetY > 0);
+  };
+
   return (
     <Tabs>
       <TabList asChild>
         <CustomTabList>
           {TAB_CONFIG.map((tab, index) => (
             <TabTrigger key={tab.name} name={tab.name} href={tab.href} asChild>
-              <TabButton icon={tab.icon} color={tab.color} bgColor={tab.bgColor} tabIndex={index}>
+              <TabButton
+                icon={tab.icon}
+                color={tab.color}
+                bgColor={tab.bgColor}
+                hasScrolled={hasScrolled}
+                tabIndex={index}>
                 {tab.text}
               </TabButton>
             </TabTrigger>
           ))}
         </CustomTabList>
       </TabList>
-      <TabSlot />
+      <ScrollView className="h-fit" onScroll={handleScroll}>
+        <TabSlot />
+      </ScrollView>
     </Tabs>
   );
 };
@@ -87,6 +107,7 @@ interface TabButtonProps extends Omit<TabTriggerSlotProps, 'tabIndex'> {
   icon?: LucideIcon;
   color?: string;
   bgColor?: string;
+  hasScrolled?: boolean;
   tabIndex: number;
 }
 
@@ -96,11 +117,16 @@ export function TabButton({
   icon,
   color,
   bgColor,
+  hasScrolled,
   tabIndex,
   ...props
 }: TabButtonProps) {
   const IconComponent = icon || CircleDot;
   const context = React.useContext(TabLayoutContext);
+
+  // Animated values for smooth transitions
+  const iconHeight = useSharedValue(hasScrolled ? 0 : 24);
+  const iconOpacity = useSharedValue(hasScrolled ? 0 : 1);
 
   useEffect(() => {
     if (isFocused && bgColor) {
@@ -108,15 +134,36 @@ export function TabButton({
     }
   }, [isFocused, tabIndex, bgColor, context]);
 
+  useEffect(() => {
+    iconHeight.value = withSpring(hasScrolled ? 0 : 24, {
+      damping: 140,
+      stiffness: 800,
+    });
+    iconOpacity.value = withSpring(hasScrolled ? 0 : 1, {
+      damping: 140,
+      stiffness: 800,
+    });
+  }, [hasScrolled, iconHeight, iconOpacity]);
+
+  const iconAnimatedStyle = useAnimatedStyle(() => ({
+    height: iconHeight.value,
+    opacity: iconOpacity.value,
+    overflow: 'hidden',
+  }));
+
   return (
     <Pressable {...props} style={({ pressed }) => pressed && styles.pressed}>
-      <View className="flex items-center justify-center space-y-1">
-        <Icon
-          as={IconComponent}
-          className={cn('size-6', isFocused ? color : 'text-typography-700')}
-          size="xl"
-        />
-        <Text className={cn('text-center text-sm', isFocused && color)}>{children}</Text>
+      <View className="flex items-center justify-center">
+        <Animated.View style={iconAnimatedStyle}>
+          <Icon
+            as={IconComponent}
+            className={cn('size-6', isFocused ? color : 'text-typography-700')}
+            size="xl"
+          />
+        </Animated.View>
+        <Animated.Text className={cn('text-center text-sm', isFocused && color)}>
+          {children}
+        </Animated.Text>
       </View>
     </Pressable>
   );

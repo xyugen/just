@@ -11,7 +11,6 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { Check } from 'lucide-react-native';
 import { Fragment, useState } from 'react';
-import { ScrollView } from 'react-native';
 
 interface Task {
   id: string;
@@ -88,43 +87,41 @@ const HomeScreen = () => {
   ];
 
   return (
-    <ScrollView>
-      <Box className="flex h-full flex-col gap-2 overflow-scroll bg-transparent">
-        {daySections.map((section, sectionIndex) => (
-          <Box key={sectionIndex} className="h-fit bg-background-0">
-            <Text className="border-b border-background-200 p-4 font-medium">{section.date}</Text>
-            <Box className="p-4">
-              <CheckboxGroup
-                value={values}
-                onChange={(keys) => {
-                  setValues(keys);
-                }}>
-                <VStack space="md">
-                  {section.tasks.map((task, taskIndex) => (
-                    <Fragment key={task.id}>
-                      {taskIndex > 0 && <Divider />}
-                      <Box>
-                        <Checkbox value={task.id} size="lg">
-                          <CheckboxIndicator className="rounded-full border-2 border-primary-400 bg-primary-100">
-                            <CheckboxIcon as={Check} className="rounded-full" />
-                          </CheckboxIndicator>
-                          <CheckboxLabel>{task.label}</CheckboxLabel>
-                        </Checkbox>
-                        {task.description && (
-                          <Text className="ml-8" size="sm">
-                            {task.description}
-                          </Text>
-                        )}
-                      </Box>
-                    </Fragment>
-                  ))}
-                </VStack>
-              </CheckboxGroup>
-            </Box>
+    <Box className="flex flex-col gap-2 overflow-scroll bg-transparent">
+      {daySections.map((section, sectionIndex) => (
+        <Box key={sectionIndex} className="h-fit bg-background-0">
+          <Text className="border-b border-background-200 p-4 font-medium">{section.date}</Text>
+          <Box className="p-4">
+            <CheckboxGroup
+              value={values}
+              onChange={(keys) => {
+                setValues(keys);
+              }}>
+              <VStack space="md">
+                {section.tasks.map((task, taskIndex) => (
+                  <Fragment key={task.id}>
+                    {taskIndex > 0 && <Divider />}
+                    <Box>
+                      <Checkbox value={task.id} size="lg">
+                        <CheckboxIndicator className="rounded-full border-2 border-primary-400 bg-primary-100">
+                          <CheckboxIcon as={Check} className="rounded-full" />
+                        </CheckboxIndicator>
+                        <CheckboxLabel>{task.label}</CheckboxLabel>
+                      </Checkbox>
+                      {task.description && (
+                        <Text className="ml-8" size="sm">
+                          {task.description}
+                        </Text>
+                      )}
+                    </Box>
+                  </Fragment>
+                ))}
+              </VStack>
+            </CheckboxGroup>
           </Box>
-        ))}
-      </Box>
-    </ScrollView>
+        </Box>
+      ))}
+    </Box>
   );
 };
 
