@@ -78,7 +78,9 @@ export const FilterTabs = () => {
           ))}
         </CustomTabList>
       </TabList>
-      <TabSlot className="h-full" />
+      <View className="h-full rounded-t-lg bg-background-0">
+        <TabSlot />
+      </View>
     </Tabs>
   );
 };
@@ -133,10 +135,23 @@ export function CustomTabList(props: TabListProps) {
   const [isInitialized, setIsInitialized] = useState(false);
   const tabLayoutsRef = useRef<TabLayoutsMap>(new Map());
   const [indicatorColor, setIndicatorColor] = useState('bg-blue-400');
+  const pendingFocusedIndexRef = useRef<{ index: number; color: string } | null>(null);
 
-  const setTabLayout = useCallback((index: number, layout: TabLayout) => {
-    tabLayoutsRef.current.set(index, layout);
-  }, []);
+  const setTabLayout = useCallback(
+    (index: number, layout: TabLayout) => {
+      tabLayoutsRef.current.set(index, layout);
+
+      // If we have a pending focused index and this is its layout, initialize the indicator
+      if (!isInitialized && pendingFocusedIndexRef.current?.index === index) {
+        indicatorX.value = layout.x;
+        indicatorWidth.value = layout.width;
+        setIndicatorColor(pendingFocusedIndexRef.current.color);
+        setIsInitialized(true);
+        pendingFocusedIndexRef.current = null;
+      }
+    },
+    [isInitialized, indicatorX, indicatorWidth]
+  );
 
   const handleFocusedIndex = useCallback(
     (index: number, color: string) => {
@@ -149,11 +164,15 @@ export function CustomTabList(props: TabListProps) {
           indicatorX.value = layout.x;
           indicatorWidth.value = layout.width;
           setIsInitialized(true);
+          pendingFocusedIndexRef.current = null;
         } else {
           // Subsequent renders - animate
           indicatorX.value = withSpring(layout.x, springConfig);
           indicatorWidth.value = withSpring(layout.width, springConfig);
         }
+      } else if (!isInitialized) {
+        // Layout not ready yet, store for later
+        pendingFocusedIndexRef.current = { index, color };
       }
     },
     [isInitialized, indicatorX, indicatorWidth]
@@ -191,7 +210,7 @@ export function CustomTabList(props: TabListProps) {
     <TabLayoutContext.Provider value={contextValue}>
       <Box
         {...props}
-        className="w-full flex-row items-center justify-center rounded-t-lg border-b border-background-100 bg-background-0 p-2">
+        className="w-full flex-row items-center justify-center rounded-t-lg border-b border-background-100 p-2">
         <View className="relative w-full">
           <Grid className="gap-2 rounded py-2" _extra={{ className: 'grid-cols-4' }}>
             {wrappedChildren}
