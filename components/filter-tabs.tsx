@@ -9,19 +9,23 @@ import {
 } from 'expo-router/ui';
 import { CheckCircle, CircleDot, Clock, ListTodo, LucideIcon } from 'lucide-react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  LayoutChangeEvent,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
-  ScrollView,
-  StyleSheet,
-  View,
-} from 'react-native';
+import { LayoutChangeEvent, StyleSheet, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { Box } from './ui/box';
 import { Grid, GridItem } from './ui/grid';
 import { Icon } from './ui/icon';
 import { Pressable } from './ui/pressable';
+
+const ScrollContext = React.createContext<{
+  hasScrolled: boolean;
+  setScrolled: (scrolled: boolean) => void;
+} | null>(null);
+
+export const useTabScroll = () => {
+  const context = React.useContext(ScrollContext);
+  if (!context) throw new Error('useTabScroll must be used within FilterTabs');
+  return context;
+};
 
 const TAB_CONFIG = [
   {
@@ -73,33 +77,36 @@ const TabLayoutContext = React.createContext<{
 export const FilterTabs = () => {
   const [hasScrolled, setScrolled] = useState(false);
 
-  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const offsetY = event.nativeEvent.contentOffset.y;
-    setScrolled(offsetY > 0);
-  };
+  const scrollContextValue = React.useMemo(
+    () => ({
+      hasScrolled,
+      setScrolled,
+    }),
+    [hasScrolled]
+  );
 
   return (
-    <Tabs>
-      <TabList asChild>
-        <CustomTabList>
-          {TAB_CONFIG.map((tab, index) => (
-            <TabTrigger key={tab.name} name={tab.name} href={tab.href} asChild>
-              <TabButton
-                icon={tab.icon}
-                color={tab.color}
-                bgColor={tab.bgColor}
-                hasScrolled={hasScrolled}
-                tabIndex={index}>
-                {tab.text}
-              </TabButton>
-            </TabTrigger>
-          ))}
-        </CustomTabList>
-      </TabList>
-      <ScrollView className="h-fit" onScroll={handleScroll}>
+    <ScrollContext.Provider value={scrollContextValue}>
+      <Tabs>
+        <TabList asChild>
+          <CustomTabList>
+            {TAB_CONFIG.map((tab, index) => (
+              <TabTrigger key={tab.name} name={tab.name} href={tab.href} asChild>
+                <TabButton
+                  icon={tab.icon}
+                  color={tab.color}
+                  bgColor={tab.bgColor}
+                  hasScrolled={hasScrolled}
+                  tabIndex={index}>
+                  {tab.text}
+                </TabButton>
+              </TabTrigger>
+            ))}
+          </CustomTabList>
+        </TabList>
         <TabSlot />
-      </ScrollView>
-    </Tabs>
+      </Tabs>
+    </ScrollContext.Provider>
   );
 };
 
