@@ -1,4 +1,3 @@
-import { useTabScroll } from '@/components/filter-tabs';
 import { TabScrollView } from '@/components/tab-scroll-view';
 import { Box } from '@/components/ui/box';
 import {
@@ -13,7 +12,6 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { Check } from 'lucide-react-native';
 import { Fragment, useState } from 'react';
-import { NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
 
 interface Task {
   id: string;
@@ -28,12 +26,6 @@ interface DaySection {
 
 const HomeScreen = () => {
   const [values, setValues] = useState(['Design']);
-  const { setScrolled } = useTabScroll();
-
-  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const offsetY = event.nativeEvent.contentOffset.y;
-    setScrolled(offsetY > 0);
-  };
 
   const daySections: DaySection[] = [
     {
@@ -97,7 +89,7 @@ const HomeScreen = () => {
 
   return (
     <TabScrollView>
-      <Box className="flex flex-col gap-2 bg-transparent">
+      <Box className="flex flex-col gap-2 overflow-hidden rounded-t-2xl bg-transparent">
         {daySections.map((section, sectionIndex) => (
           <Box key={sectionIndex} className="h-fit bg-background-0">
             <Text className="border-b border-background-200 p-4 font-medium">{section.date}</Text>

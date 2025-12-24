@@ -9,7 +9,7 @@ import {
 } from 'expo-router/ui';
 import { CheckCircle, CircleDot, Clock, ListTodo, LucideIcon } from 'lucide-react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { LayoutChangeEvent, StyleSheet, View } from 'react-native';
+import { GestureResponderEvent, LayoutChangeEvent, StyleSheet, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { Box } from './ui/box';
 import { Grid, GridItem } from './ui/grid';
@@ -130,10 +130,13 @@ export function TabButton({
 }: TabButtonProps) {
   const IconComponent = icon || CircleDot;
   const context = React.useContext(TabLayoutContext);
+  const tabScroll = useTabScroll();
 
   // Animated values for smooth transitions
   const iconHeight = useSharedValue(hasScrolled ? 0 : 24);
   const iconOpacity = useSharedValue(hasScrolled ? 0 : 1);
+  const clickCircleSize = useSharedValue(0);
+  const clickCircleOpacity = useSharedValue(0);
 
   useEffect(() => {
     if (isFocused && bgColor) {
@@ -142,15 +145,15 @@ export function TabButton({
   }, [isFocused, tabIndex, bgColor, context]);
 
   useEffect(() => {
-    iconHeight.value = withSpring(hasScrolled ? 0 : 24, {
+    iconHeight.value = withSpring(tabScroll.hasScrolled ? 0 : 24, {
       damping: 140,
       stiffness: 800,
     });
-    iconOpacity.value = withSpring(hasScrolled ? 0 : 1, {
+    iconOpacity.value = withSpring(tabScroll.hasScrolled ? 0 : 1, {
       damping: 140,
       stiffness: 800,
     });
-  }, [hasScrolled, iconHeight, iconOpacity]);
+  }, [hasScrolled, iconHeight, iconOpacity, tabScroll.hasScrolled]);
 
   const iconAnimatedStyle = useAnimatedStyle(() => ({
     height: iconHeight.value,
@@ -158,9 +161,40 @@ export function TabButton({
     overflow: 'hidden',
   }));
 
+  const handleClick = (event: GestureResponderEvent) => {
+    if (isFocused) return;
+
+    props.onPress?.(event);
+
+    clickCircleSize.value = 10;
+    clickCircleOpacity.value = 1;
+    clickCircleSize.value = withSpring(50, {
+      stiffness: 900,
+      damping: 120,
+    });
+    clickCircleOpacity.value = withSpring(0, {
+      stiffness: 900,
+      damping: 120,
+    });
+  };
+
+  const clickCircleAnimatedStyle = useAnimatedStyle(() => ({
+    width: clickCircleSize.value,
+    height: clickCircleSize.value,
+    opacity: clickCircleOpacity.value,
+    transform: [
+      { translateX: -clickCircleSize.value / 2 },
+      { translateY: -clickCircleSize.value / 2 },
+    ],
+  }));
+
   return (
-    <Pressable {...props} style={({ pressed }) => pressed && styles.pressed}>
-      <View className="flex items-center justify-center">
+    <Pressable {...props} onPress={handleClick} style={({ pressed }) => pressed && styles.pressed}>
+      <Box className="relative flex items-center justify-center">
+        <Animated.View
+          className={cn('absolute left-[50%] top-[50%] rounded-full', bgColor)}
+          style={clickCircleAnimatedStyle}
+        />
         <Animated.View style={iconAnimatedStyle}>
           <Icon
             as={IconComponent}
@@ -168,10 +202,12 @@ export function TabButton({
             size="xl"
           />
         </Animated.View>
-        <Animated.Text className={cn('text-center text-sm', isFocused && color)}>
-          {children}
-        </Animated.Text>
-      </View>
+        <Box className="relative w-full">
+          <Animated.Text className={cn('text-center text-sm', isFocused && 'text-background-0')}>
+            {children}
+          </Animated.Text>
+        </Box>
+      </Box>
     </Pressable>
   );
 }
@@ -260,17 +296,19 @@ export function CustomTabList(props: TabListProps) {
 
   return (
     <TabLayoutContext.Provider value={contextValue}>
-      <Box
-        {...props}
-        className="w-full flex-row items-center justify-center rounded-t-lg border-b border-background-100 p-2">
+      <Box {...props} className="w-full flex-row items-center justify-center p-2">
         <View className="relative w-full">
-          <Grid className="gap-2 rounded py-2" _extra={{ className: 'grid-cols-4' }}>
-            {wrappedChildren}
-          </Grid>
           <Animated.View
             style={[animatedIndicatorStyle]}
-            className={cn('absolute -bottom-2 h-1 rounded-t-full', indicatorColor)}
+            className={cn('absolute bottom-0 h-5 rounded', indicatorColor)}
           />
+          <Grid className="gap-2 rounded" _extra={{ className: 'grid-cols-4' }}>
+            {wrappedChildren}
+          </Grid>
+          {/*<Animated.View
+            style={[animatedIndicatorStyle]}
+            className={cn('absolute -bottom-2 h-1 rounded-t-full', indicatorColor)}
+          />*/}
         </View>
       </Box>
     </TabLayoutContext.Provider>

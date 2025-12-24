@@ -42,7 +42,9 @@ export const AppTabs = () => {
   return (
     <Tabs>
       <TabHeader />
-      <TabSlot className="h-full bg-slate-400" />
+      <View className="flex-1 bg-background-200">
+        <TabSlot className="h-full" />
+      </View>
       <TabList asChild>
         <CustomTabList>
           {TAB_CONFIG.map((tab) => (
@@ -80,7 +82,7 @@ export function TabButton({ children, isFocused, icon, ...props }: TabButtonProp
 
   return (
     <Pressable {...props} style={({ pressed }) => pressed && styles.pressed}>
-      <View className="flex items-center justify-center space-y-1">
+      <Box className="flex items-center justify-center space-y-1">
         <Icon
           as={IconComponent}
           className={cn('size-6', isFocused ? 'text-primary-500' : 'text-typography-500')}
@@ -93,7 +95,7 @@ export function TabButton({ children, isFocused, icon, ...props }: TabButtonProp
           )}>
           {children}
         </Text>
-      </View>
+      </Box>
     </Pressable>
   );
 }
